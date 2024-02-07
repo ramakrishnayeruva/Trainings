@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Training", "WebApplication1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "html helpper", "html helpper\html helpper.csproj", "{254FD792-C7CB-427F-9144-58C8478C3885}"
 EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Arroyo_DB", "Arroyo_DB\Arroyo_DB.sqlproj", "{21A25D87-0310-45A2-8C8E-7014943F5301}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,12 @@ Global
 		{254FD792-C7CB-427F-9144-58C8478C3885}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{254FD792-C7CB-427F-9144-58C8478C3885}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{254FD792-C7CB-427F-9144-58C8478C3885}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21A25D87-0310-45A2-8C8E-7014943F5301}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21A25D87-0310-45A2-8C8E-7014943F5301}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21A25D87-0310-45A2-8C8E-7014943F5301}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{21A25D87-0310-45A2-8C8E-7014943F5301}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21A25D87-0310-45A2-8C8E-7014943F5301}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21A25D87-0310-45A2-8C8E-7014943F5301}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
