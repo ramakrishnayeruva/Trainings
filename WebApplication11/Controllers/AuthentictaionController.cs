@@ -5,8 +5,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Training.Data;
-using Training.model;
+using DataAccess.Data;
+using DataAccess.model;
 
 namespace Training.Controllers
 {

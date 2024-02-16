@@ -5,10 +5,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using Training;
-using Training.Data;
-using WebApplication11.Data;
+using DataAccess.Data;
+using DataAccess.model;
+using Business.MiddleWare;
 using ConfigurationManager = Training.ConfigurationManager;
+using Business.Interface;
+using Business.Service;
+//using DataAccess.Service;
+//using Business.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +23,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddTransient<GlobalExceptionHandlerMiddleware>();
 builder.Services.AddResponseCaching();
+//builder.Services.AddTransient<IUser,Users>();
+builder.Services.AddTransient<IUser, UsersService>();
+builder.Services.AddTransient<ITraining,TrainingService>();
+builder.Services.AddTransient<IResource,ResourceService>();
 builder.Services.AddSwaggerGen(options => { 
 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
 {

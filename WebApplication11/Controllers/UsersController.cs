@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Training.Data;
-using Training.model;
+using DataAccess.Data;
+using DataAccess.model;
+using Business.Interface;
+using Business.Service;
 
 namespace Training.Controllers
 {
@@ -11,81 +13,77 @@ namespace Training.Controllers
     public class UsersController : ControllerBase
     {
         private TrainingsApiDBContext dbContext;
-        public UsersController(TrainingsApiDBContext dbContext)
+        private IUser _IUser;
+        public UsersController(TrainingsApiDBContext dbContext,IUser IUser)
         {
             this.dbContext = dbContext;
+            this._IUser = IUser;
 
         }
         [HttpGet]
-        public async Task<IActionResult> GetUsers()
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            return Ok(await dbContext.Users.ToListAsync());
-
+            return await Task.FromResult(_IUser.GetUsers());
         }
-
+        
         [HttpPost]
-
-        public async Task<IActionResult> AddUsers(User addUserRequest)
+        public async Task<ActionResult<User>> AddUsers(User addUserRequest)
         {
-            var User = new User()
-            {
-                // Id = Guid.NewGuid(),
-                Name = addUserRequest.Name,
-                Password = addUserRequest.Password,
-                Username = addUserRequest.Username,
-                //TrainingType = addTrainingRequest.TrainingType,
-
-
-            };
-            await dbContext.Users.AddAsync(User);
-            await dbContext.SaveChangesAsync();
-            return Ok(User);
-
+            _IUser.AddUsers(addUserRequest);
+            //return await Task.FromResult(CreatedAtAction("GetEmployees", new { id = employee.EmployeeID }, employee));
+            return await Task.FromResult(addUserRequest);
         }
 
-        [HttpGet]
-        [Route("{id:int}")]
-        public async Task<IActionResult> GetUser([FromRoute] int id)
+       
+        [HttpGet("{id}")]
+        public async Task<ActionResult<User>> GetUser(int id)
         {
-            var User = await dbContext.Users.FindAsync(id);
-            if (User == null)
+            var users = await Task.FromResult(_IUser.GetUsers(id));
+            if (users == null)
             {
                 return NotFound();
             }
-            return Ok(User);
+            return users;
         }
 
-        [HttpPut]
-        [Route("{id:int}")]
-        public async Task<IActionResult> UpdateUser([FromRoute] int id, User updateUserRequest)
+        
+        [HttpPut("{id}")]
+        public async Task<ActionResult<User>> UpdateUser(int id, User user)
         {
-            var User = await dbContext.Users.FindAsync(id);
-            if (User != null)
+            if (id != user.Id)
             {
-
-                User.Name = updateUserRequest.Name;
-                User.Username = updateUserRequest.Username;
-
-
-                await dbContext.SaveChangesAsync();
-                return Ok(User);
+                return BadRequest();
             }
-            return NotFound();
+            try
+            {
+                _IUser.UpdateUser(user);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UserExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return await Task.FromResult(user);
         }
-
-        [HttpDelete]
-        [Route("{id:int}")]
-        public async Task<IActionResult> DeleteUser(int id)
+        private bool UserExists(int id)
         {
-            var User = await dbContext.Users.FindAsync(id);
-            if (User != null)
-            {
-                dbContext.Remove(User);
-                dbContext.SaveChanges();
-                return Ok(User);
-            }
-            return NotFound();
+            return _IUser.CheckUser(id);
         }
+
+       
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<User>> DeleteUser(int id)
+        {
+            var employee = _IUser.DeleteUser(id);
+            return await Task.FromResult(employee);
+        }
+
 
 
     }

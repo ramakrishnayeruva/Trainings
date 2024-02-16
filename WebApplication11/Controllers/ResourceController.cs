@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using Training.Data;
-using Training.model;
+using DataAccess.Data;
+using DataAccess.model;
+using Business.Interface;
 
 namespace Training.Controllers
 {
@@ -15,89 +16,83 @@ namespace Training.Controllers
     public class ResourceController : ControllerBase
     {
         private TrainingsApiDBContext dbContext;
+        private IResource _IResource;
         public ResourceController(TrainingsApiDBContext dbContext)
         {
             this.dbContext = dbContext;
+            this._IResource = _IResource;
 
         }
         [HttpGet]
         [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any)]
         [Authorize(Roles = "Trainer,TrainingCoordinator,Trainee")]
-        public async Task<IActionResult> GetResources()
+        public async Task<ActionResult<IEnumerable<Resource>>> GetResources()
         {
-            return Ok(await dbContext.Resources1.ToListAsync());
+            return await Task.FromResult(_IResource.GetResources());
 
         }
 
         [HttpPost]
         [Authorize (Roles = "TrainingCoordinator")]
-        public async Task<IActionResult> AddResources(Resource addResourceRequest)
+        public async Task<ActionResult<Resource>> AddResources(Resource addResourceRequest)
         {
-            var resource = new Resource()
-            {
-                // Id = Guid.NewGuid(),
-                AssociateName = addResourceRequest.AssociateName,
-                TrainingName = addResourceRequest.TrainingName,
-                //TrainingType = addTrainingRequest.TrainingType,
-
-
-            };
-            await dbContext.Resources1.AddAsync(resource);
-            await dbContext.SaveChangesAsync();
-            return Ok(resource);
+            _IResource.AddResources(addResourceRequest);           
+            return await Task.FromResult(addResourceRequest);
 
         }
 
         [HttpGet]
         [Route("{id:int}")]
         [Authorize(Roles = "TrainingCoordinator")]
-        public async Task<IActionResult> GetResource([FromRoute] int id)
+        public async Task<ActionResult<Resource>> GetResource([FromRoute] int id)
         {
-            var resource = await dbContext.Resources1.FindAsync(id);
-            var Trainingall = dbContext.Resources1.Where(x => x.Id == id).Select(x => x.TrainingName);
-            // var TraiingNames = dbContext.Resources1.FirstOrDefault(c => c.Id == id).TrainingName;
+            var resource = await Task.FromResult(_IResource.GetResource(id));
             if (resource == null)
             {
                 return NotFound();
             }
-            return Ok(resource);
+            return resource;
         }
-
-
+                
         [HttpPut]
-        [Route("{id:int}")]
         [Authorize(Roles = "TrainingCoordinator")]
-        public async Task<IActionResult> UpdateResource([FromRoute] int id, Resource updateResourceRequest)
+        public async Task<ActionResult<Resource>> UpdateUser(int id, Resource resource)
         {
-            var resource = await dbContext.Resources1.FindAsync(id);
-            if (resource != null)
+            if (id != resource.Id)
             {
-                
-                resource.AssociateName = updateResourceRequest.AssociateName;
-                resource.TrainingName = updateResourceRequest.TrainingName;
-                
-
-                await dbContext.SaveChangesAsync();
-                return Ok(resource);
+                return BadRequest();
             }
-            return NotFound();
+            try
+            {
+                _IResource.UpdateResource(resource);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UserExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return await Task.FromResult(resource);
+        }
+        
+        private bool UserExists(int id)
+        {
+            return _IResource.CheckResource(id);
         }
 
-        [HttpDelete]
-        [Route("{id:int}")]
-        [Authorize(Roles = "TrainingCoordinator")]
-        public async Task<IActionResult> DeleteResource(int id)
-        {
-            var resource = await dbContext.Resources1.FindAsync(id);
-            if (resource != null)
-            {
-                dbContext.Remove(resource);
-                dbContext.SaveChanges();
-                return Ok(resource);
-            }
-            return NotFound();
-        }
 
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "TrainingCoordinator")]
+        public async Task<ActionResult<Resource>> DeleteResource(int id)
+        {
+            var resource = _IResource.DeleteResource(id);
+            return await Task.FromResult(resource);
+        }
 
     }
 }
